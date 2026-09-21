@@ -146,7 +146,17 @@ class SocketHandler(
 					}
 				}
 
-				if (itemUuid != null && itemKind != null) onDisplayContent(itemUuid, itemKind, (message.data?.arguments ?: emptyMap()).isInterruptPlaybackRequested())
+				Timber.i("DisplayContent received: item=$itemUuid kind=$itemKind arguments=${message.data?.arguments?.keys}")
+
+				if (itemUuid == null || itemKind == null) {
+					Timber.w("Ignoring DisplayContent: item id or type could not be read")
+				} else {
+					try {
+						onDisplayContent(itemUuid, itemKind, (message.data?.arguments ?: emptyMap()).isInterruptPlaybackRequested())
+					} catch (err: Throwable) {
+						Timber.e(err, "Failed to handle DisplayContent for $itemUuid")
+					}
+				}
 			}
 			.launchIn(coroutineScope)
 
