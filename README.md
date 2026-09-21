@@ -1,77 +1,87 @@
-<h1 align="center">Jellyfin for Android TV</h1>
-<h3 align="center">Part of the <a href="https://jellyfin.org">Jellyfin Project</a></h3>
+<h1 align="center">JellyRift</h1>
+<h3 align="center">Cliente Jellyfin para Android TV e Fire TV, baseado no app oficial</h3>
 
 ---
 
-<p align="center">
-<img alt="Logo banner" src="https://raw.githubusercontent.com/jellyfin/jellyfin-ux/master/branding/SVG/banner-logo-solid.svg?sanitize=true"/>
-<br/><br/>
-<a href="https://github.com/jellyfin/jellyfin-androidtv">
-<img alt="GPL 2.0 License" src="https://img.shields.io/github/license/jellyfin/jellyfin-androidtv.svg"/>
-</a>
-<a href="https://github.com/jellyfin/jellyfin-androidtv/releases">
-<img alt="Current Release" src="https://img.shields.io/github/release/jellyfin/jellyfin-androidtv.svg"/>
-</a>
-<a href="https://translate.jellyfin.org/projects/jellyfin-android/jellyfin-androidtv/">
-<img alt="Translation Status" src="https://translate.jellyfin.org/widgets/jellyfin-android/-/jellyfin-androidtv/svg-badge.svg"/>
-</a>
-<br/>
-<a href="https://opencollective.com/jellyfin">
-<img alt="Donate" src="https://img.shields.io/opencollective/all/jellyfin.svg?label=backers"/>
-</a>
-<a href="https://features.jellyfin.org">
-<img alt="Feature Requests" src="https://img.shields.io/badge/fider-vote%20on%20features-success.svg"/>
-</a>
-<a href="https://matrix.to/#/+jellyfin:matrix.org">
-<img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"/>
-</a>
-<br/>
-<a href="https://play.google.com/store/apps/details?id=org.jellyfin.androidtv">
-<img width="153" alt="Jellyfin on Google Play" src="https://jellyfin.org/images/store-icons/google-play.png"/>
-</a>
-<a href="https://www.amazon.com/gp/aw/d/B07TX7Z725">
-<img width="153" alt="Jellyfin on Amazon Appstore" src="https://jellyfin.org/images/store-icons/amazon.png"/>
-</a>
-<a href="https://f-droid.org/en/packages/org.jellyfin.androidtv/">
-<img width="153" alt="Jellyfin on F-Droid" src="https://jellyfin.org/images/store-icons/fdroid.png"/>
-</a>
-<br/>
-<a href="https://repo.jellyfin.org/releases/client/androidtv/">Download archive</a>
-</p>
+JellyRift é um fork do [Jellyfin for Android TV](https://github.com/jellyfin/jellyfin-androidtv). Eu mantenho porque precisava de algumas
+correções que o app oficial não tem, principalmente para usar o Jellyfin com plugins que conversam com a TV. Continua sendo um cliente
+Jellyfin comum: você entra no seu servidor, navega pela biblioteca e assiste como sempre.
 
-Jellyfin for Android TV is a Jellyfin client for Android TV, Nvidia Shield, and Amazon Fire TV devices. We welcome all contributions and pull
-requests! If you have a larger feature in mind please open an issue so we can discuss the implementation before you start. 
+Não é um projeto oficial do Jellyfin e não tem ligação com a equipe deles. "Jellyfin" é marca do projeto Jellyfin.
 
-## Building
+## O que muda em relação ao app oficial
 
-The app uses Gradle and requires the Android SDK. We recommend using Android Studio, which includes all required dependencies, for
-development and building. For manual building without Android Studio make sure a compatible JDK and Android SDK are installed and in your
-PATH, then use the Gradle wrapper (`./gradlew`) to build the project with the `assembleDebug` Gradle task to generate an apk file:
+- **Reprodução com servidor que exige login no streaming.** O ExoPlayer baixa o vídeo por conta própria e, no app oficial, faz isso sem enviar
+  credencial nenhuma. Se o servidor, um plugin ou um proxy reverso exige autenticação para `/Videos/{id}/stream`, a resposta é 403 e o app
+  cai para transcodificação. Aqui o cabeçalho de autorização vai junto, só para o servidor em que você entrou (mesmo esquema, host e porta).
+- **`DisplayContent` que interrompe o vídeo.** O app oficial ignora `DisplayContent` enquanto algo toca, para que navegar em outro aparelho
+  não pare o filme. O servidor não informa quem mandou o comando, então um plugin nunca conseguia mostrar nada em uma TV que está
+  reproduzindo. Agora existe o argumento opcional `InterruptPlayback=true`: com ele o app para o vídeo e abre o conteúdo. Sem o argumento,
+  o comportamento é o de sempre.
+- **`DisplayContent` repetido não empilha telas.** Se o mesmo item já está aberto, o comando é ignorado, e o botão voltar sai da página em vez
+  de andar por cópias dela.
+- **`DisplayMessage` respeita o tempo pedido** (`TimeoutMs`, entre 1 e 30 segundos) e mostra o título em uma linha separada do texto.
+- **Correções no PlayNow remoto.** Um segundo PlayNow depois de uma reprodução derrubava o app com `NullPointerException`, e um PlayNow
+  sobre um vídeo em andamento fechava o player novo junto com o antigo.
+- **Voltar na tela inicial pergunta se você quer sair**, e sair encerra o app de verdade, fechando a conexão com o servidor.
+- **Atualização dentro do app**, a partir das releases deste repositório (veja abaixo).
+
+Fora isso o app é o oficial. O nome que ele informa ao servidor continua sendo "Jellyfin for Android TV", para que servidores e plugins que
+reconhecem o cliente por esse nome continuem funcionando.
+
+## Instalação
+
+Baixe o APK da [última release](https://github.com/iMund/jellyrift-androidtv/releases/latest). O app usa outro identificador
+(`br.com.jellyrift.androidtv`), então instala ao lado do Jellyfin oficial sem substituí-lo, e você entra no servidor de novo.
+
+- **Android TV:** copie o APK para a TV (pendrive, `adb install` ou um app de arquivos) e abra. Pode ser preciso liberar a instalação de
+  apps de fontes desconhecidas para o aplicativo que você usou para abrir o arquivo.
+- **Fire TV / Fire Stick:** instale o app Downloader, libere para ele a instalação de apps de fontes desconhecidas (o menu fica em Minha
+  Fire TV, Opções do desenvolvedor, e varia conforme a versão do Fire OS), abra nele o endereço do APK da release e instale.
+
+### Atualizando
+
+Em Configurações, Sobre, "Buscar atualização". O app consulta a última release deste repositório, baixa o APK, confere o tamanho e o
+SHA-256 publicados e entrega ao instalador do sistema, que pede a sua confirmação. O Android só aceita o APK se ele for assinado com a mesma
+chave do app instalado. Na primeira vez o sistema pede para permitir que o JellyRift instale aplicativos.
+
+## Compilando
+
+Precisa do JDK 21 e do Android SDK. Com Android Studio já vem tudo. Sem ele, use o Gradle wrapper:
 
 ```shell
 ./gradlew assembleDebug
 ```
 
-The task will create an APK file in the `/app/build/outputs/apk/debug` directory. This APK file uses a different app-id from our stable
-builds and can be manually installed to your device.
+O APK sai em `app/build/outputs/apk/debug`. A versão de debug usa o identificador `br.com.jellyrift.androidtv.debug`, então convive com a
+release.
 
-## Branching
+Para gerar uma release assinada, informe o keystore por propriedades do Gradle (em `~/.gradle/gradle.properties`, nunca no repositório) ou
+por variáveis de ambiente:
 
-The `master` branch is the primary development branch and the target for all pull requests. It is **unstable** and may contain breaking
-changes or unresolved bugs. For production deployments and forks, always use the latest `release-x.y.z` branch. Do not base production work
-or long-lived forks on `master`.
+```properties
+keystore.file=/caminho/para/jellyrift.jks
+keystore.password=...
+signing.key.alias=...
+signing.key.password=...
+```
 
-Release branches are created at the start of a beta cycle and are kept up to date with each published release. Maintainers will cherry-pick
-selected changes into release branches as needed for backports. These branches are reused for subsequent patch releases.
+```shell
+./gradlew assembleRelease -Pjellyfin.version=1.0.0 -Pupdate.repository=iMund/jellyrift-androidtv
+```
 
-## Translating
+- `jellyfin.version` define a versão do app. O formato é `1.2.3` ou `1.2.3-rc.1`, e a atualização dentro do app compara a tag da release com
+  essa versão do mesmo jeito que o build calcula o `versionCode`.
+- `update.repository` é o repositório (`dono/nome`) onde o app procura atualizações. Vazio, o botão de atualização some.
+- `update.api.url` troca o endereço da API do GitHub, útil para testar com um servidor local.
 
-Translations can be improved very easily from our [Weblate](https://translate.jellyfin.org/projects/jellyfin-android/jellyfin-androidtv)
-instance. Look through the following graphic to see if your native language could use some work! We cannot accept changes to translation
-files via pull requests.
+A tag da release no GitHub precisa ser a mesma versão (`v1.0.0`) e o APK precisa estar anexado a ela.
 
-<p align="center">
-<a href="https://translate.jellyfin.org/engage/jellyfin-android/">
-<img alt="Detailed Translation Status" src="https://translate.jellyfin.org/widgets/jellyfin-android/-/jellyfin-androidtv/multi-auto.svg"/>
-</a>
-</p>
+## Base e licença
+
+O código vem do `jellyfin/jellyfin-androidtv` (branch `master`, a partir do commit `0d9400d0a`), e o histórico dele foi mantido. Como ele, o
+JellyRift é distribuído sob a [GPL-2.0](LICENSE). Os avisos de copyright e as licenças das bibliotecas usadas aparecem em Configurações,
+Sobre, Licenças.
+
+Se a sua dúvida é sobre o Jellyfin em si, o lugar certo é o [projeto oficial](https://jellyfin.org). Problemas específicos do JellyRift
+podem ser abertos como [issue aqui](https://github.com/iMund/jellyrift-androidtv/issues).
