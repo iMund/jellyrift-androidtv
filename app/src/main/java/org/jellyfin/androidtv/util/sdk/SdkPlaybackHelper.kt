@@ -292,8 +292,10 @@ class SdkPlaybackHelper(
 					?: Duration.ZERO
 
 			val items = withContext(Dispatchers.IO) {
+				// The playback controller needs the media sources and streams of the items it is going to play
 				val response by api.itemsApi.getItems(
 					ids = itemIds,
+					fields = ItemRepository.itemFields,
 				)
 				response.items
 			}
