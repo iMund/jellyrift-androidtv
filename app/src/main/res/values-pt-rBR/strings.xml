@@ -586,6 +586,7 @@
     <string name="speech_error_no_permission">Sem permissão para usar o microfone. Por favor, ative-a nas configurações do sistema.</string>
     <string name="speech_error_unknown">Ocorreu um erro inesperado durante o reconhecimento de fala.</string>
     <string name="lbl_exit">Sair</string>
+    <string name="exit_app_title">Sair do %1$s?</string>
     <string name="pref_still_watching_behavior_title">Exibir popup de tempo limite por inatividade</string>
     <string name="lbl_still_watching_default">3 episódios ou 90 minutos</string>
     <string name="lbl_still_watching_short">2 episódios ou 60 minutos</string>
