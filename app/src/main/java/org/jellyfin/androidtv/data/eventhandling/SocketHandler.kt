@@ -224,7 +224,9 @@ class SocketHandler(
 
 	private suspend fun onDisplayContent(itemId: UUID, itemKind: BaseItemKind, interruptPlayback: Boolean) = withContext(Dispatchers.Main) {
 		val playbackController = playbackControllerContainer.playbackController
-		val playbackActive = playbackController?.isPlaying == true || playbackController?.isPaused == true
+		// A player screen is showing, whatever its state: isPlaying and isPaused are both false while it is buffering,
+		// seeking or starting up, and navigating then would leave the player underneath to navigate back by itself
+		val playbackActive = playbackController?.hasFragment() == true
 
 		val action = decideDisplayContentAction(playbackActive, interruptPlayback)
 		if (action == DisplayContentAction.IGNORE) {
