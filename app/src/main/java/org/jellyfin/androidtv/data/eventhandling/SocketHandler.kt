@@ -12,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.data.model.DataRefreshService
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
@@ -170,7 +169,7 @@ class SocketHandler(
 				val text by message
 				val string by message
 
-				onDisplayMessage(header, text ?: string)
+				onDisplayMessage(header, text ?: string, message.data?.arguments.orEmpty().displayMessageTimeoutMs())
 			}
 			.launchIn(coroutineScope)
 	}
@@ -284,14 +283,13 @@ class SocketHandler(
 		else -> Destinations.itemDetails(itemId)
 	}
 
-	private fun onDisplayMessage(header: String?, text: String?) {
-		val toastMessage = buildString {
-			if (!header.isNullOrBlank()) append(header, ": ")
-			append(text)
-		}
+	// Lifecycle scope runs on the main thread, which owns the toasts
+	private val toaster = DisplayMessageToaster(lifecycle.coroutineScope) { text ->
+		val toast = Toast.makeText(context, text, Toast.LENGTH_LONG).also { it.show() }
+		ShownToast { toast.cancel() }
+	}
 
-		runBlocking(Dispatchers.Main) {
-			Toast.makeText(context, toastMessage, Toast.LENGTH_LONG).show()
-		}
+	private fun onDisplayMessage(header: String?, text: String?, timeoutMs: Long?) {
+		toaster.display(buildDisplayMessageText(header, text), timeoutMs)
 	}
 }
