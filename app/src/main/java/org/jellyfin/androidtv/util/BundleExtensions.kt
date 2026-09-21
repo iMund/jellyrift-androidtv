@@ -11,3 +11,10 @@ inline fun <reified T> Bundle.getValue(key: String): T? = when {
 fun createBundle(init: (Bundle.() -> Unit)? = null) = Bundle().also { bundle ->
 	if (init != null) bundle.init()
 }
+
+/** Whether both bundles have the same keys and equal values. [Bundle] does not implement `equals` itself. */
+@Suppress("DEPRECATION")
+fun Bundle.hasSameContentAs(other: Bundle): Boolean {
+	val keys = keySet()
+	return keys == other.keySet() && keys.all { key -> get(key) == other.get(key) }
+}

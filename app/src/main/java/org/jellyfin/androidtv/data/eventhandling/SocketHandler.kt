@@ -17,6 +17,7 @@ import org.jellyfin.androidtv.data.model.DataRefreshService
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
 import org.jellyfin.androidtv.ui.navigation.Destination
 import org.jellyfin.androidtv.ui.navigation.Destinations
+import org.jellyfin.androidtv.ui.navigation.hasSameTarget
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
 import org.jellyfin.androidtv.ui.playback.MediaManager
 import org.jellyfin.androidtv.ui.playback.PlaybackControllerContainer
@@ -234,6 +235,14 @@ class SocketHandler(
 		val destination = resolveDisplayContentDestination(itemId, itemKind) ?: return@withContext
 
 		val interrupted = action == DisplayContentAction.INTERRUPT_AND_LAUNCH
+
+		// Every navigation adds a screen to the back stack, so a sender that repeats the command (a plugin reminding the
+		// user) would pile up copies of the same page and the back key would not leave it
+		if (!interrupted && navigationRepository.currentDestination?.hasSameTarget(destination) == true) {
+			Timber.i("Not launching $itemId: it is already showing")
+			return@withContext
+		}
+
 		if (interrupted) {
 			Timber.i("Stopping playback to launch $itemId as requested by the server")
 			// The player screen stays on top of the navigation history and is replaced by the destination below.

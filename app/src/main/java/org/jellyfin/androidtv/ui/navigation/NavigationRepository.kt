@@ -33,6 +33,11 @@ interface NavigationRepository {
 	fun navigate(destination: Destination, replace: Boolean)
 
 	/**
+	 * The screen on top of the back stack, or `null` when it is empty and the initial destination is showing.
+	 */
+	val currentDestination: Destination.Fragment?
+
+	/**
 	 * Whether the [goBack] function will succeed or not.
 	 *
 	 * @see [goBack]
@@ -78,6 +83,8 @@ class NavigationRepositoryImpl(
 		}
 		_currentAction.tryEmit(action)
 	}
+
+	override val currentDestination: Destination.Fragment? get() = fragmentHistory.lastOrNull()
 
 	override val canGoBack: Boolean get() = fragmentHistory.isNotEmpty()
 
