@@ -42,6 +42,17 @@
     <string name="lbl_play">Play</string>
     <string name="lbl_pause">Pause</string>
     <string name="lbl_exit">Exit</string>
+    <string name="update_title">Check for updates</string>
+    <string name="update_checking">Checking…</string>
+    <string name="update_up_to_date">You have the latest version</string>
+    <string name="update_available">Version %1$s is available. Select to install</string>
+    <string name="update_downloading">Downloading… %1$d%%</string>
+    <string name="update_check_failed">Could not check for updates</string>
+    <string name="update_download_failed">Could not download the update</string>
+    <string name="update_permission_needed">Allow this app to install updates, then select again</string>
+    <string name="update_permission_unavailable">This device does not let the app install updates</string>
+    <string name="update_confirm_install">Confirm the installation in the system dialog. Select to check again</string>
+    <string name="update_install_failed">The update could not be installed</string>
     <string name="exit_app_title">Exit %1$s?</string>
     <string name="lbl_cancel">Cancel</string>
     <string name="lbl_cancel_recording">Cancel recording</string>

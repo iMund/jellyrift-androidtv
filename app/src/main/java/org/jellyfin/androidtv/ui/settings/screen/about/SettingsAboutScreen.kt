@@ -47,6 +47,8 @@ fun SettingsAboutScreen(launchedFromLogin: Boolean = false) {
 			)
 		}
 
+		item { SettingsUpdateButton() }
+
 		item {
 			val heading = stringResource(R.string.pref_device_model)
 			val caption = "${Build.MANUFACTURER} ${Build.MODEL}"

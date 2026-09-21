@@ -13,6 +13,7 @@
         android:name="android.permission.ACCESS_WIFI_STATE"
         tools:ignore="LeanbackUsesWifi" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- Search permissions (voice to text) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -56,6 +57,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Jellyfin"
         android:usesCleartextTraffic="true">
+
+        <!-- Result of installing an app update -->
+        <receiver
+            android:name=".update.InstallStatusReceiver"
+            android:exported="false" />
 
         <!-- Screensaver -->
         <service

@@ -17,6 +17,10 @@ android {
 		applicationId = namespace
 		versionName = project.getVersionName()
 		versionCode = getVersionCode(versionName!!)
+
+		// GitHub repository ("owner/name") whose releases the app offers as updates. Empty disables updating.
+		buildConfigField("String", "UPDATE_REPOSITORY", "\"${getProperty("update.repository").orEmpty()}\"")
+		buildConfigField("String", "UPDATE_API_URL", "\"${getProperty("update.api.url") ?: "https://api.github.com"}\"")
 	}
 
 	buildFeatures {

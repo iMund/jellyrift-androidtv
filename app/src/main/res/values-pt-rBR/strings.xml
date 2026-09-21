@@ -586,6 +586,17 @@
     <string name="speech_error_no_permission">Sem permissão para usar o microfone. Por favor, ative-a nas configurações do sistema.</string>
     <string name="speech_error_unknown">Ocorreu um erro inesperado durante o reconhecimento de fala.</string>
     <string name="lbl_exit">Sair</string>
+    <string name="update_title">Buscar atualização</string>
+    <string name="update_checking">Verificando…</string>
+    <string name="update_up_to_date">Você está na versão mais recente</string>
+    <string name="update_available">A versão %1$s está disponível. Selecione para instalar</string>
+    <string name="update_downloading">Baixando… %1$d%%</string>
+    <string name="update_check_failed">Não foi possível buscar atualizações</string>
+    <string name="update_download_failed">Não foi possível baixar a atualização</string>
+    <string name="update_permission_needed">Permita que o app instale atualizações e selecione de novo</string>
+    <string name="update_permission_unavailable">Este aparelho não deixa o app instalar atualizações</string>
+    <string name="update_confirm_install">Confirme a instalação na janela do sistema. Selecione para verificar de novo</string>
+    <string name="update_install_failed">Não foi possível instalar a atualização</string>
     <string name="exit_app_title">Sair do %1$s?</string>
     <string name="pref_still_watching_behavior_title">Exibir popup de tempo limite por inatividade</string>
     <string name="lbl_still_watching_default">3 episódios ou 90 minutos</string>

@@ -63,6 +63,8 @@ import org.jellyfin.androidtv.util.coil.CoilTimberLogger
 import org.jellyfin.androidtv.util.coil.createCoilConnectivityChecker
 import org.jellyfin.androidtv.util.sdk.SdkPlaybackHelper
 import org.jellyfin.sdk.android.androidDevice
+import org.jellyfin.androidtv.update.ApkInstaller
+import org.jellyfin.androidtv.update.AppUpdater
 import org.jellyfin.sdk.api.client.HttpClientOptions
 import org.jellyfin.sdk.api.okhttp.OkHttpFactory
 import org.jellyfin.sdk.createJellyfin
@@ -106,6 +108,22 @@ val appModule = module {
 		// Create an empty API instance, the actual values are set by the SessionRepository
 		get<JellyfinSdk>().createApi(httpClientOptions = get<HttpClientOptions>())
 	}
+
+	// App updates
+	single {
+		AppUpdater(
+			context = androidContext(),
+			// The APK is tens of MB: the SDK's 30 s limit for a whole call would cut it on a slow connection. The read
+			// timeout still ends a stalled download.
+			client = get<OkHttpFactory>().createClient(get<HttpClientOptions>()).newBuilder()
+				.callTimeout(java.time.Duration.ZERO)
+				.build(),
+			repository = BuildConfig.UPDATE_REPOSITORY,
+			installedVersionCode = BuildConfig.VERSION_CODE,
+			apiUrl = BuildConfig.UPDATE_API_URL,
+		)
+	}
+	single { ApkInstaller(androidContext()) }
 
 	single { SocketHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), ProcessLifecycleOwner.get().lifecycle) }
 
