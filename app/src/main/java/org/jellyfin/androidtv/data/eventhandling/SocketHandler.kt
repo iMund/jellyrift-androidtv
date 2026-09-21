@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
@@ -153,6 +154,9 @@ class SocketHandler(
 				} else {
 					try {
 						onDisplayContent(itemUuid, itemKind, (message.data?.arguments ?: emptyMap()).isInterruptPlaybackRequested())
+					} catch (err: CancellationException) {
+						// The scope was cancelled (for example when the session changes): that is not a failure
+						throw err
 					} catch (err: Throwable) {
 						Timber.e(err, "Failed to handle DisplayContent for $itemUuid")
 					}
