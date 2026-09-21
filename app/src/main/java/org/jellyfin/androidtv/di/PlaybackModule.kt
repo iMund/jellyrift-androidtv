@@ -18,6 +18,7 @@ import org.jellyfin.androidtv.ui.playback.PlaybackLauncher
 import org.jellyfin.androidtv.ui.playback.VideoQueueManager
 import org.jellyfin.androidtv.ui.playback.rewrite.RewriteMediaManager
 import org.jellyfin.androidtv.util.AndroidVersion
+import org.jellyfin.androidtv.util.apiclient.ServerAuthorizationInterceptor
 import org.jellyfin.androidtv.util.profile.createDeviceProfile
 import org.jellyfin.playback.core.playbackManager
 import org.jellyfin.playback.jellyfin.jellyfinPlugin
@@ -25,6 +26,7 @@ import org.jellyfin.playback.media3.exoplayer.ExoPlayerOptions
 import org.jellyfin.playback.media3.exoplayer.exoPlayerPlugin
 import org.jellyfin.playback.media3.session.MediaSessionOptions
 import org.jellyfin.playback.media3.session.media3SessionPlugin
+import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.HttpClientOptions
 import org.jellyfin.sdk.api.okhttp.OkHttpFactory
 import org.jellyfin.sdk.model.api.MediaSegmentType
@@ -49,7 +51,12 @@ val playbackModule = module {
 			requestTimeout = Duration.ZERO
 		)
 
-		OkHttpDataSource.Factory(okHttpFactory.createClient(httpClientOptions))
+		// ExoPlayer requests media on its own, so it needs to be given the credentials for the server itself
+		val client = okHttpFactory.createClient(httpClientOptions).newBuilder()
+			.addInterceptor(ServerAuthorizationInterceptor(get<ApiClient>()))
+			.build()
+
+		OkHttpDataSource.Factory(client)
 	}
 
 	single { createPlaybackManager() }
