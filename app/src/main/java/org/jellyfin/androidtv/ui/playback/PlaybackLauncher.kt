@@ -3,6 +3,7 @@ package org.jellyfin.androidtv.ui.playback
 import android.content.Context
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.ui.navigation.ActivityDestinations
+import org.jellyfin.androidtv.ui.navigation.Destination
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
 import org.jellyfin.sdk.model.api.BaseItemDto
@@ -19,7 +20,16 @@ class PlaybackLauncher(
 	private val videoQueueManager: VideoQueueManager,
 	private val navigationRepository: NavigationRepository,
 	private val userPreferences: UserPreferences,
+	private val playbackControllerContainer: PlaybackControllerContainer,
 ) {
+	private fun navigateToPlayer(destination: Destination.Fragment, replace: Boolean) {
+		// The player screen that is replaced navigates back by itself when it stops, unless it is told it is being
+		// replaced, and that would close the new player right after it opens
+		if (replace) playbackControllerContainer.playbackController?.fragment?.prepareForReplacement()
+
+		navigationRepository.navigate(destination, replace)
+	}
+
 	private val BaseItemDto.supportsExternalPlayer
 		get() = when (type) {
 			BaseItemKind.MOVIE,
@@ -61,10 +71,10 @@ class PlaybackLauncher(
 				context.startActivity(ActivityDestinations.externalPlayer(context, position?.milliseconds ?: Duration.ZERO))
 			} else if (userPreferences[UserPreferences.playbackRewriteVideoEnabled]) {
 				val destination = Destinations.videoPlayerNew(position)
-				navigationRepository.navigate(destination, replace)
+				navigateToPlayer(destination, replace)
 			} else {
 				val destination = Destinations.videoPlayer(position)
-				navigationRepository.navigate(destination, replace)
+				navigateToPlayer(destination, replace)
 			}
 		}
 	}

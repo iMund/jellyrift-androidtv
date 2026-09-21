@@ -172,12 +172,8 @@ class SocketHandler(
 			dataRefreshService.lastLibraryChange = Instant.now()
 	}
 
-	private suspend fun onPlayMessage(message: PlayMessage) = withContext(Dispatchers.Main) {
-		val itemIds = message.data?.itemIds ?: return@withContext
-
-		// A player screen that is already showing gets replaced by the new one. It navigates back by itself when it
-		// stops, unless it is told it is being replaced, and that would close the new player right after it opens.
-		playbackControllerContainer.playbackController?.fragment?.prepareForReplacement()
+	private fun onPlayMessage(message: PlayMessage) {
+		val itemIds = message.data?.itemIds ?: return
 
 		runCatching {
 			playbackHelper.retrieveAndPlay(
