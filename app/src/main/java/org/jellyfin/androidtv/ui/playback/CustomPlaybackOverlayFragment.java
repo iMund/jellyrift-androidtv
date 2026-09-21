@@ -1306,6 +1306,14 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
         });
     }
 
+    /**
+     * Marks this screen as about to be replaced by another destination. Stopping the fragment then no longer
+     * navigates back on its own, which would undo the navigation that replaced it.
+     */
+    public void prepareForReplacement() {
+        navigating = true;
+    }
+
     public void closePlayer() {
         if (navigating) return;
         navigating = true;

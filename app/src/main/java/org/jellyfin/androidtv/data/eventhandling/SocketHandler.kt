@@ -144,7 +144,7 @@ class SocketHandler(
 					}
 				}
 
-				if (itemUuid != null && itemKind != null) onDisplayContent(itemUuid, itemKind)
+				if (itemUuid != null && itemKind != null) onDisplayContent(itemUuid, itemKind, (message.data?.arguments ?: emptyMap()).isInterruptPlaybackRequested())
 			}
 			.launchIn(coroutineScope)
 
@@ -217,25 +217,42 @@ class SocketHandler(
 		}
 	}
 
-	private suspend fun onDisplayContent(itemId: UUID, itemKind: BaseItemKind) = withContext(Dispatchers.Main) {
+	private suspend fun onDisplayContent(itemId: UUID, itemKind: BaseItemKind, interruptPlayback: Boolean) = withContext(Dispatchers.Main) {
 		val playbackController = playbackControllerContainer.playbackController
+		val playbackActive = playbackController?.isPlaying == true || playbackController?.isPaused == true
 
-		if (playbackController?.isPlaying == true || playbackController?.isPaused == true) {
-			Timber.i("Not launching $itemId: playback in progress")
-			return@withContext
+		val interrupted = when (decideDisplayContentAction(playbackActive, interruptPlayback)) {
+			DisplayContentAction.IGNORE -> {
+				Timber.i("Not launching $itemId: playback in progress")
+				return@withContext
+			}
+
+			DisplayContentAction.INTERRUPT_AND_LAUNCH -> {
+				Timber.i("Stopping playback to launch $itemId as requested by the server")
+				// The player screen stays on top of the navigation history and is replaced by the destination below.
+				// Closing it here would queue a "go back" that a navigation issued right after it can overwrite, and
+				// the screen navigates back by itself when it stops unless it is told it is being replaced.
+				playbackController?.fragment?.prepareForReplacement()
+				playbackController?.endPlayback(false)
+				true
+			}
+
+			DisplayContentAction.LAUNCH -> false
 		}
 
 		Timber.i("Launching $itemId")
 
-		when (itemKind) {
+		val destination = when (itemKind) {
 			BaseItemKind.USER_VIEW,
 			BaseItemKind.COLLECTION_FOLDER -> {
 				val item = withContext(Dispatchers.IO) { api.userLibraryApi.getItem(itemId = itemId).content }
-				itemLauncher.launchUserView(item)
+				itemLauncher.getUserViewDestination(item)
 			}
 
-			else -> navigationRepository.navigate(Destinations.itemDetails(itemId))
+			else -> Destinations.itemDetails(itemId)
 		}
+
+		navigationRepository.navigate(destination, replace = interrupted)
 	}
 
 	private fun onDisplayMessage(header: String?, text: String?) {
