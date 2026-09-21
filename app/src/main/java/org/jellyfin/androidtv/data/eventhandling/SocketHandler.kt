@@ -15,6 +15,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.data.model.DataRefreshService
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
+import org.jellyfin.androidtv.ui.navigation.Destination
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
 import org.jellyfin.androidtv.ui.playback.MediaManager
@@ -225,38 +226,41 @@ class SocketHandler(
 		val playbackController = playbackControllerContainer.playbackController
 		val playbackActive = playbackController?.isPlaying == true || playbackController?.isPaused == true
 
-		val interrupted = when (decideDisplayContentAction(playbackActive, interruptPlayback)) {
-			DisplayContentAction.IGNORE -> {
-				Timber.i("Not launching $itemId: playback in progress")
-				return@withContext
-			}
+		val action = decideDisplayContentAction(playbackActive, interruptPlayback)
+		if (action == DisplayContentAction.IGNORE) {
+			Timber.i("Not launching $itemId: playback in progress")
+			return@withContext
+		}
 
-			DisplayContentAction.INTERRUPT_AND_LAUNCH -> {
-				Timber.i("Stopping playback to launch $itemId as requested by the server")
-				// The player screen stays on top of the navigation history and is replaced by the destination below.
-				// Closing it here would queue a "go back" that a navigation issued right after it can overwrite, and
-				// the screen navigates back by itself when it stops unless it is told it is being replaced.
-				playbackController?.fragment?.prepareForReplacement()
-				playbackController?.endPlayback(false)
-				true
-			}
+		// Resolve where to go before touching the playback: if this fails the running video must be left alone
+		val destination = resolveDisplayContentDestination(itemId, itemKind) ?: return@withContext
 
-			DisplayContentAction.LAUNCH -> false
+		val interrupted = action == DisplayContentAction.INTERRUPT_AND_LAUNCH
+		if (interrupted) {
+			Timber.i("Stopping playback to launch $itemId as requested by the server")
+			// The player screen stays on top of the navigation history and is replaced by the destination below.
+			// Closing it here would queue a "go back" that a navigation issued right after it can overwrite, and
+			// the screen navigates back by itself when it stops unless it is told it is being replaced.
+			playbackController?.fragment?.prepareForReplacement()
+			playbackController?.endPlayback(false)
 		}
 
 		Timber.i("Launching $itemId")
+		navigationRepository.navigate(destination, replace = interrupted)
+	}
 
-		val destination = when (itemKind) {
-			BaseItemKind.USER_VIEW,
-			BaseItemKind.COLLECTION_FOLDER -> {
-				val item = withContext(Dispatchers.IO) { api.userLibraryApi.getItem(itemId = itemId).content }
-				itemLauncher.getUserViewDestination(item)
-			}
-
-			else -> Destinations.itemDetails(itemId)
+	/** The screen that shows [itemId], or `null` when it cannot be determined (for example when the server is unreachable). */
+	private suspend fun resolveDisplayContentDestination(itemId: UUID, itemKind: BaseItemKind): Destination.Fragment? = when (itemKind) {
+		BaseItemKind.USER_VIEW,
+		BaseItemKind.COLLECTION_FOLDER -> try {
+			val item = withContext(Dispatchers.IO) { api.userLibraryApi.getItem(itemId = itemId).content }
+			itemLauncher.getUserViewDestination(item)
+		} catch (err: ApiClientException) {
+			Timber.w(err, "Unable to load $itemId to display it")
+			null
 		}
 
-		navigationRepository.navigate(destination, replace = interrupted)
+		else -> Destinations.itemDetails(itemId)
 	}
 
 	private fun onDisplayMessage(header: String?, text: String?) {
