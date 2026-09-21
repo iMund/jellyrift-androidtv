@@ -26,8 +26,8 @@ Não é um projeto oficial do Jellyfin e não tem ligação com a equipe deles. 
 - **Voltar na tela inicial pergunta se você quer sair**, e sair encerra o app de verdade, fechando a conexão com o servidor.
 - **Atualização dentro do app**, a partir das releases deste repositório (veja abaixo).
 
-Fora isso o app é o oficial. O nome que ele informa ao servidor continua sendo "Jellyfin for Android TV", para que servidores e plugins que
-reconhecem o cliente por esse nome continuem funcionando.
+Fora isso o app é o oficial. Da versão 1.1 em diante ele se identifica ao servidor como "JellyRift" (nas versões 1.0.x o nome era o do app
+oficial, "Jellyfin for Android TV"). Plugins que reconhecem o cliente pelo nome precisam aceitar os dois.
 
 ## Instalação
 

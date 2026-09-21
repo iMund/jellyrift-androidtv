@@ -16,6 +16,7 @@ import org.acra.sender.ReportSender
 import org.acra.sender.ReportSenderException
 import org.acra.sender.ReportSenderFactory
 import org.jellyfin.androidtv.BuildConfig
+import org.jellyfin.androidtv.util.appClientName
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.preference.TelemetryPreferences
 import org.jellyfin.androidtv.util.appendCodeBlock
@@ -68,12 +69,8 @@ object TelemetryService {
 			// Create connection
 			val connection = URL(url).openConnection() as HttpURLConnection
 			// Add authorization
-			val clientName = buildString {
-				append("Jellyfin for Android TV")
-				if (BuildConfig.DEBUG) append(" (debug)")
-			}
 			val authorization = AuthorizationHeaderBuilder.buildHeader(
-				clientName = clientName,
+				clientName = appClientName,
 				clientVersion = BuildConfig.VERSION_NAME,
 				deviceId = "",
 				deviceName = "",
@@ -97,7 +94,7 @@ object TelemetryService {
 		private fun CrashReportData.toReport(): String = buildMarkdown {
 			// Header
 			appendLine("---")
-			appendLine("client: Jellyfin for Android TV")
+			appendLine("client: JellyRift")
 			appendLine("client_version: ${BuildConfig.VERSION_NAME}")
 			appendLine("client_repository: https://github.com/iMund/jellyrift-androidtv")
 			appendLine("type: crash_report")

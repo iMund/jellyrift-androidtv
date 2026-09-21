@@ -62,6 +62,7 @@ import org.jellyfin.androidtv.util.apiclient.ReportingHelper
 import org.jellyfin.androidtv.util.coil.CoilTimberLogger
 import org.jellyfin.androidtv.util.coil.createCoilConnectivityChecker
 import org.jellyfin.androidtv.util.sdk.SdkPlaybackHelper
+import org.jellyfin.androidtv.util.appClientName
 import org.jellyfin.sdk.android.androidDevice
 import org.jellyfin.androidtv.update.ApkInstaller
 import org.jellyfin.androidtv.update.AppUpdater
@@ -88,11 +89,7 @@ val appModule = module {
 			context = androidContext()
 
 			// Add client info
-			val clientName = buildString {
-				append("Jellyfin for Android TV")
-				if (BuildConfig.DEBUG) append(" (debug)")
-			}
-			clientInfo = ClientInfo(clientName, BuildConfig.VERSION_NAME)
+			clientInfo = ClientInfo(appClientName, BuildConfig.VERSION_NAME)
 			deviceInfo = get(defaultDeviceInfo)
 
 			// Change server version
